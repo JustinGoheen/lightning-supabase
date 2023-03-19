@@ -86,3 +86,7 @@ class SupabaseStore(LightningWork, abc.ABC):
     @abc.abstractmethod
     def mount(self) -> None:
         ...
+
+    @abc.abstractmethod
+    def run(self) -> None:
+        ...

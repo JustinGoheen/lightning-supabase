@@ -25,9 +25,39 @@ class SupabaseStore(LightningWork, abc.ABC):
     def __init__(
         self,
         parallel=False,
-        cloud_compute=CloudCompute(name="default", idle_timeout=15),
+        cache_calls=True,
+        raise_exception=True,
+        host="127.0.0.1",
+        port=None,
+        local_build_config=None,
+        cloud_build_config=None,
+        start_with_flow=True,
+        cloud_compute_name="default",
+        cloud_compute_disk_size=0,
+        cloud_compute_idle_timeout=60,
+        cloud_compute_shm_size=0,
+        cloud_compute_interruptible=False,
+        cloud_compute_internal_id=None,
     ):
-        super().__init__(parallel=parallel, cloud_compute=cloud_compute)
+
+        super().__init__(
+            parallel=parallel,
+            cache_calls=cache_calls,
+            raise_exception=raise_exception,
+            host=host,
+            port=port,
+            local_build_config=local_build_config,
+            cloud_build_config=cloud_build_config,
+            start_with_flow=start_with_flow,
+            cloud_compute=CloudCompute(
+                name=cloud_compute_name,
+                disk_size=cloud_compute_disk_size,
+                idle_timeout=cloud_compute_idle_timeout,
+                shm_size=cloud_compute_shm_size,
+                interruptible=cloud_compute_interruptible,
+                _internal_id=cloud_compute_internal_id,
+            ),
+        )
 
     @property
     def available_buckets(self):

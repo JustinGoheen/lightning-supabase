@@ -17,11 +17,23 @@ import os
 from pathlib import Path
 from typing import Any, List
 
+import click
 import supabase
 from lightning import CloudCompute, LightningWork
+from rich import print as rprint
+
+from lightning_supabase.utilities.rich import show_destructive_behavior_warning
 
 
-class SupabaseStore(LightningWork, abc.ABC):
+class SupabaseStorage(LightningWork, abc.ABC):
+    """A custom LightningWork to Drive Supabase Bucket Operations
+
+    # Notes
+        - LightningWork [docs](https://lightning.ai/docs/app/stable/core_api/lightning_work/lightning_work.html).
+        - CloudCompute [docs](https://lightning.ai/docs/app/stable/core_api/lightning_work/compute.html#cloudcompute).
+        - Supabase-Py [docs](https://supabase.com/docs/reference/python/initializing).
+    """
+
     def __init__(
         self,
         parallel=False,
@@ -59,42 +71,138 @@ class SupabaseStore(LightningWork, abc.ABC):
             ),
         )
 
+    def _confirm_flow(self, command, command_name: str, asset_type: str, assets: list) -> None:
+        show_destructive_behavior_warning(command_name, asset_type, assets)
+        if click.confirm("Do you want to continue"):
+            command()
+            print()
+            rprint(f"[bold green]{command_name.title()} complete[bold green]")
+            print()
+        else:
+            print()
+            rprint("[bold green]No Action Taken[/bold green]")
+            print()
+
     @property
     def available_buckets(self):
+        """shows buckets available to user
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-listbuckets
+        """
         return supabase.storage().list_buckets()
 
-    def create_bucket(self, bucket_name: str, create_only: bool = False):
-        if create_only:
-            supabase.storage().create_bucket(bucket_name)
-        else:
-            return supabase.storage().create_bucket(bucket_name)
+    def create_bucket(self, bucket_name: str):
+        """creates a bucket
+
+        # Arguments
+            bucket_name: the name to use when creating the bucket
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-createbucket
+        """
+        supabase.storage().create_bucket(bucket_name)
 
     def retrieve_bucket(self, bucket_name: str):
+        """retrieves a bucket
+
+        # Arguments
+            bucket_name: the name of the bucket to retrieve
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-getbucket
+        """
         return supabase.storage().get_bucket(bucket_name)
 
     def create_signed_url(self, bucket_name: str, destination: Path | str, expiry_duration: int):
+        """creates a signed url
+
+        # Arguments
+            bucket_name:
+            destination:
+            expiray_duration: the length of time in seconds to keep the url alive
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-from-createsignedurl
+        """
         supabase.storage().from_(bucket_name).create_signed_url(destination, expiry_duration)
 
-    def retrieve_signed_url(self, bucket_name: str, source: Path | str):
+    def retrieve_public_url(self, bucket_name: str, source: Path | str):
+        """Returns the URL for an asset in a public bucket
+
+        # Arguments
+            bucket_name: the name of the bucket
+            source:
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-from-getpublicurl
+        """
         supabase.storage().from_(bucket_name).get_public_url(source)
 
     def list_bucket_files(self, bucket_name: str) -> List[str]:
+        """lists files in a user defined bucket
+
+        # Arguments
+            bucket_name: the name of the bucket to show the contents of
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-from-list
+        """
         return supabase.storage().from_(bucket_name).list()
 
     def delete_files_from_bucket(self, bucket_name: str, files: List[Path | str]) -> None:
+        """deletes user defined files from specified bucket
+
+        # Arguments
+            bucket_name: the name of the bucket where the files are located
+            files: a Python list of files, including file format ending
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-deletebucket
+        """
         supabase.storage().from_(bucket_name).move(*files)
 
     def move_files(self, bucket_name: str, files: List[Path | str]) -> None:
+        """moves a list of user defined files
+
+        # Arguments
+            bucket_name: the name of the bucket where the files are located
+            files: a Python list of files, including file format ending
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-from-move
+        """
         supabase.storage().from_(bucket_name).move(*files)
 
     def delete_bucket(self, bucket_name: str) -> None:
+        """deletes a user defined bucket
+
+        # Arguments
+            bucket_name: the name of the bucket to delete
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-deletebucket
+        """
         supabase.storage().delete_bucket(bucket_name)
 
     def empty_bucket(self, bucket_name: str) -> None:
+        """empties a user defined bucket
+
+        # Arguments
+            bucket_name: the name of the bucket to empty
+
+        # Notes
+            see: https://supabase.com/docs/reference/python/storage-emptybucket
+        """
         supabase.storage().empty_bucket(bucket_name)
 
     def upload_to_bucket(self, source: Path | str, destination: Path | str, bucket_name: str) -> None:
         """uploads a file to bucket
+
+        # Arguments
+            source:
+            destination:
+            bucket_name:
 
         # Notes
             see: https://supabase.com/docs/reference/python/storage-from-upload
@@ -104,6 +212,10 @@ class SupabaseStore(LightningWork, abc.ABC):
 
     def download_from_bucket(self, source: Path | str, bucket_name: str) -> Any:
         """downloads a file from bucket to a destination
+
+        # Arguments
+            source: the object to download
+            bucket_name: the name of the bucket where source is located
 
         # Notes
             see: https://supabase.com/docs/reference/python/storage-from-download
@@ -115,8 +227,8 @@ class SupabaseStore(LightningWork, abc.ABC):
 
     @abc.abstractmethod
     def mount(self) -> None:
-        ...
+        """Abstract method that must be overidden to mount Supabase bucket to Lightning"""
 
     @abc.abstractmethod
     def run(self) -> None:
-        ...
+        """Abstract method that must be overidden to define LightningWork.run flow"""

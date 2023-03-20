@@ -5,3 +5,9 @@ theme:
 
 repo_name: justingoheen/lightning-supabase
 repo_url: https://github.com/justingoheen/lightning-supabase
+
+
+nav:
+  - Home: index.md
+  - Reference:
+    - SupabaseStorage: storage.SupabaseStorage.md

@@ -13,3 +13,16 @@
 # limitations under the License. -->
 
 A [Supabase](https://supabase.com) integration for [Lightning AI](https://lightning.ai/docs/app/stable/) Apps.
+
+The integration is a thin abstraction on top of [Supabase-Py](https://supabase.com/docs/reference/python/introduction).
+
+View the docs at: https://lightning-supabase.vercel.app/
+
+Roadmap:
+
+- add support for Supabase buckets
+- add support for Supabase PostgreSQL db
+- add support for Supabase Deno functions
+- add support for realtime: contingent on supabase-py
+
+Supabase Auth may not be included in this integration.

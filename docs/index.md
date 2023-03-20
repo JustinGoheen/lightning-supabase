@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License. -->
 
-A [Supabase](https://supabase.com) integration for [Lightning AI](https://lightning.ai).
+A [Supabase](https://supabase.com) integration for [Lightning AI](https://lightning.ai/docs/app/stable/) Apps.

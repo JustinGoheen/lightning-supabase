@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License. -->
 
-This is a [Supabase](https://supabase.com) component for [Lightning AI](https://lightning.ai).
+A [Supabase](https://supabase.com) integration for [Lightning AI](https://lightning.ai).

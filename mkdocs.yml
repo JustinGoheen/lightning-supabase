@@ -1,0 +1,7 @@
+site_name: Lightning-Supabase
+
+theme:
+  name: material
+
+repo_name: justingoheen/lightning-supabase
+repo_url: https://github.com/justingoheen/lightning-supabase
